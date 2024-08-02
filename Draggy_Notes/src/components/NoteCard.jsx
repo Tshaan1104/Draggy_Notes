@@ -2,6 +2,7 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useRef, useState } from 'react'
 import Trash from './trashicon';
+import { db } from '../appwrite/databases';
 import { setNewOffset, autoGrow, setZIndex,bodyparser } from '../utils';
 
 const NoteCard = ({ note }) => {
@@ -49,9 +50,22 @@ const NoteCard = ({ note }) => {
     const mouseup = () => {
         document.removeEventListener("mousemove", mousemove);
         document.removeEventListener("mouseup", mouseup);
+
+        const newposition = setNewOffset(cardref.current);
+        savedata('position', newposition);
+        db.notes.update(note.$id, {position:JSON.stringify(newposition)})
     }
 
+    const savedata= async (key,value)=>{
+        const payload ={[key]:JSON.stringify(value)};
 
+        try{
+                await db.notes.update(note.$id, payload)
+        }
+        catch(error){
+            console.error(error);
+        }
+    }
     return (
 
         <div className='card' ref={cardref} style={{
