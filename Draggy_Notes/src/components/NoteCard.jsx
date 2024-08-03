@@ -1,11 +1,16 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
+import Spinner from '../assets/spinner';
 import React, { useEffect, useRef, useState } from 'react'
 import Trash from './trashicon';
 import { db } from '../appwrite/databases';
-import { setNewOffset, autoGrow, setZIndex,bodyparser } from '../utils';
+import { setNewOffset, autoGrow, setZIndex, bodyparser } from '../utils';
 
 const NoteCard = ({ note }) => {
+    const [saving, setsaving] = useState(false);
+    const keyUpTimer = useRef(null);
+
+
     const body = bodyparser(note.body);
     const [position, setposition] = useState(JSON.parse(note.position));
     const colors = JSON.parse(note.colors);
@@ -53,19 +58,32 @@ const NoteCard = ({ note }) => {
 
         const newposition = setNewOffset(cardref.current);
         savedata('position', newposition);
-        db.notes.update(note.$id, {position:JSON.stringify(newposition)})
+        db.notes.update(note.$id, { position: JSON.stringify(newposition) })
     }
 
-    const savedata= async (key,value)=>{
-        const payload ={[key]:JSON.stringify(value)};
+    const savedata = async (key, value) => {
+        const payload = { [key]: JSON.stringify(value) };
 
-        try{
-                await db.notes.update(note.$id, payload)
+        try {
+            await db.notes.update(note.$id, payload)
         }
-        catch(error){
+        catch (error) {
             console.error(error);
         }
     }
+
+    const handlekeyup = () => {
+        setsaving(true);
+
+        if (keyUpTimer.current) {
+            clearTimeout(keyUpTimer.current);
+        }
+        keyUpTimer.current = setTimeout(() => {
+            savedata("body", textaredref.current.value);
+        }, 2000);
+    }
+
+
     return (
 
         <div className='card' ref={cardref} style={{
@@ -73,14 +91,23 @@ const NoteCard = ({ note }) => {
             top: `${position.y}px`,
         }}>
 
-            <div className='card-header' onMouseDown={mouseDown} style={{ backgroundColor: colors.colorHeader }}><Trash /></div>
+            <div className='card-header' onMouseDown={mouseDown} style={{ backgroundColor: colors.colorHeader }}><Trash /> {saving && (
+                <div className="card-saving">
+                    <Spinner color={colors.colorText} />
+                    <span style={{ color: colors.colorText }}>
+                        Saving...
+                    </span>
+                </div>
+                )}</div>
 
             <div className='card-body'>
-                <textarea style={{ color: colors.colorText }}  defaultValue={body} onInput={() => {
-                    autoGrow(textaredref)
-                }} onFocus={() => {
-                    setZIndex(cardref.current);
-                }} ref={textaredref}></textarea>
+                <textarea
+                    onKeyUp={handlekeyup}
+                    style={{ color: colors.colorText }} defaultValue={body} onInput={() => {
+                        autoGrow(textaredref)
+                    }} onFocus={() => {
+                        setZIndex(cardref.current);
+                    }} ref={textaredref}></textarea>
             </div></div>
     )
 }
