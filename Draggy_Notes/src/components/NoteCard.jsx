@@ -2,8 +2,10 @@
 /* eslint-disable react/prop-types */
 import Spinner from '../assets/spinner';
 import React, { useEffect, useRef, useState } from 'react'
-import Trash from './trashicon';
+// import Trash from './trashicon';
+import Deletebutton from './deletebutton';
 import { db } from '../appwrite/databases';
+import { useContext } from 'react';
 import { setNewOffset, autoGrow, setZIndex, bodyparser } from '../utils';
 
 const NoteCard = ({ note }) => {
@@ -27,14 +29,17 @@ const NoteCard = ({ note }) => {
 
 
     const mouseDown = (e) => {
-        mousestartposition.x = e.clientX;
-        mousestartposition.y = e.clientY;
 
-        document.addEventListener("mousemove", mousemove),
-            document.addEventListener("mouseup", mouseup),
-            setZIndex(cardref.current);
+        if (e.target.className === 'card-header') {
+            mousestartposition.x = e.clientX;
+            mousestartposition.y = e.clientY;
 
-    }
+            document.addEventListener("mousemove", mousemove),
+                document.addEventListener("mouseup", mouseup),
+                setZIndex(cardref.current);
+
+        }
+    };
 
     const mousemove = (e) => {
         let mouseMovedir = { x: mousestartposition.x - e.clientX, y: mousestartposition.y - e.clientY }
@@ -91,14 +96,14 @@ const NoteCard = ({ note }) => {
             top: `${position.y}px`,
         }}>
 
-            <div className='card-header' onMouseDown={mouseDown} style={{ backgroundColor: colors.colorHeader }}><Trash /> {saving && (
+            <div className='card-header' onMouseDown={mouseDown} style={{ backgroundColor: colors.colorHeader }}><Deletebutton  noteid={note.$id} /> {saving && (
                 <div className="card-saving">
                     <Spinner color={colors.colorText} />
                     <span style={{ color: colors.colorText }}>
                         Saving...
                     </span>
                 </div>
-                )}</div>
+            )}</div>
 
             <div className='card-body'>
                 <textarea
