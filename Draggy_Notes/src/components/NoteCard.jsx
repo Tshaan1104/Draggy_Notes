@@ -7,10 +7,13 @@ import Deletebutton from './deletebutton';
 import { db } from '../appwrite/databases';
 import { useContext } from 'react';
 import { setNewOffset, autoGrow, setZIndex, bodyparser } from '../utils';
+import { NoteContext } from '../context/NoteContext';
 
 const NoteCard = ({ note }) => {
     const [saving, setsaving] = useState(false);
     const keyUpTimer = useRef(null);
+
+    const { setselectednote } = useContext(NoteContext);
 
 
     const body = bodyparser(note.body);
@@ -24,6 +27,7 @@ const NoteCard = ({ note }) => {
 
     useEffect(() => {
         autoGrow(textaredref)
+        setZIndex(cardref.current);
     }, []);
 
 
@@ -37,6 +41,7 @@ const NoteCard = ({ note }) => {
             document.addEventListener("mousemove", mousemove),
                 document.addEventListener("mouseup", mouseup),
                 setZIndex(cardref.current);
+            setselectednote(note);
 
         }
     };
@@ -96,7 +101,7 @@ const NoteCard = ({ note }) => {
             top: `${position.y}px`,
         }}>
 
-            <div className='card-header' onMouseDown={mouseDown} style={{ backgroundColor: colors.colorHeader }}><Deletebutton  noteid={note.$id} /> {saving && (
+            <div className='card-header' onMouseDown={mouseDown} style={{ backgroundColor: colors.colorHeader }}><Deletebutton noteid={note.$id} /> {saving && (
                 <div className="card-saving">
                     <Spinner color={colors.colorText} />
                     <span style={{ color: colors.colorText }}>
@@ -111,6 +116,7 @@ const NoteCard = ({ note }) => {
                     style={{ color: colors.colorText }} defaultValue={body} onInput={() => {
                         autoGrow(textaredref)
                     }} onFocus={() => {
+                        setselectednote(note);
                         setZIndex(cardref.current);
                     }} ref={textaredref}></textarea>
             </div></div>

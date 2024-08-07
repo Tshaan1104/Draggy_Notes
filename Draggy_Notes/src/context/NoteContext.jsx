@@ -7,6 +7,7 @@ export const NoteContext=createContext()
 const NoteProvider=({children})=>{
 const [notes,setnotes]=useState([]);
 const [loading ,setloading ]=useState(true);
+const [selectednote,setselectednote]=useState(null);
 
 
 useEffect(()=>{
@@ -24,7 +25,7 @@ const init=async()=>{
     setnotes(response.documents);
     setloading(false);
   }
-const contextdata={notes,setnotes};
+const contextdata={notes,setnotes,selectednote,setselectednote};
 
     return <NoteContext.Provider value={contextdata}>
         {loading ? <div
